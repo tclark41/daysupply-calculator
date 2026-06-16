@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Day-Supply Calculator</title>
+
+<!-- PWA / installable web app -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1F3864" />
+<!-- iOS "Add to Home Screen" -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="DaySupply" />
+<link rel="apple-touch-icon" href="icon-180.png" />
 <style>
   :root {
     --navy: #1F3864;
@@ -733,6 +742,15 @@
   // Initial render for all panels
   $all('.panel').forEach(recalc);
 })();
+</script>
+<script>
+  // Register the service worker so the app works offline once installed.
+  // Harmless when opened from file:// (serviceWorker is unavailable there).
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
 </script>
 </body>
 </html>

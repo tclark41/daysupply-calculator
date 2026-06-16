@@ -12,7 +12,20 @@ line** for the Rx image note.
 ## How to open
 
 Just double-click **`index.html`** (or drag it into Chrome/Firefox). No server, no
-internet, nothing to install. It works the same on a counter PC, tablet, or phone.
+internet, nothing to install. It works the same on a counter PC or tablet.
+
+## Install on iPhone (counter app)
+
+Hosted as a PWA at **https://tclark41.github.io/daysupply-calculator/**
+
+1. Open that URL in **Safari** on the iPhone.
+2. Tap the **Share** button → **Add to Home Screen** → **Add**.
+3. Launch it from the new **DaySupply** icon — it opens full-screen like an app.
+
+After the first load it is cached by a service worker, so it keeps working
+**offline** (e.g. Airplane mode) at the counter. When the product data changes,
+bump `CACHE` in `sw.js` (e.g. `daysupply-v1` → `-v2`) so phones pick up the update
+on their next online load.
 
 ```
 ~/experiments/daysupply_calculator/
