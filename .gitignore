@@ -1,0 +1,12 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+
+# Logs / scratch
+*.log
+
+# This is a no-build, dependency-free project — nothing to ignore from a toolchain.

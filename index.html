@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Day-Supply Calculator</title>
+<style>
+  :root {
+    --navy: #1F3864;
+    --blue: #2E75B6;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --line: #d9dee6;
+    --ink: #1c2733;
+    --muted: #5b6776;
+    --ok: #1e7d4f;
+    --okbg: #e7f5ee;
+    --warn: #8a6d00;
+    --warnbg: #fcf4d6;
+    --err: #b3261e;
+    --errbg: #fbe9e7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.45;
+  }
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 16px 20px;
+  }
+  header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  header p { margin: 2px 0 0; font-size: 13px; opacity: 0.8; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
+
+  .disclaimer {
+    background: var(--warnbg);
+    color: var(--warn);
+    border: 1px solid #e7d28a;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .tab {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(20,40,80,0.04);
+  }
+  .card h2 { margin: 0 0 12px; font-size: 17px; color: var(--navy); }
+
+  label.fld { display: block; margin-bottom: 12px; }
+  label.fld > span {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  input[type="number"], input[type="text"], select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-size: 16px;
+    background: #fff;
+    color: var(--ink);
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(46,117,182,0.18);
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 12px; }
+  .grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .grid7 .day { text-align: center; }
+  .grid7 .day span { font-size: 11px; }
+  .grid7 input { padding: 7px 4px; text-align: center; font-size: 15px; }
+
+  .row-inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .chk { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; cursor: pointer; }
+  .chk input { width: auto; }
+
+  .btn {
+    border: 1px solid var(--blue);
+    background: var(--blue);
+    color: #fff;
+    border-radius: 7px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .btn.ghost { background: #fff; color: var(--blue); }
+  .btn.small { padding: 5px 9px; font-size: 12px; }
+
+  .product-meta { font-size: 12px; color: var(--muted); margin: -6px 0 12px; }
+  .verify-badge {
+    display: inline-block;
+    background: var(--warnbg);
+    color: var(--warn);
+    border: 1px solid #e7d28a;
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 1px 5px;
+    margin-left: 6px;
+  }
+
+  /* Result */
+  .result {
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    background: #fbfcfe;
+  }
+  .result.ok { border-color: #bfe3cf; background: var(--okbg); }
+  .result.err { border-color: #f0c4bf; background: var(--errbg); }
+  .result .big {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.1;
+  }
+  .result .big small { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .result .exact { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .prn-tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    color: var(--blue); background: #e8f1fb; border-radius: 4px;
+    padding: 1px 6px; margin-left: 8px; vertical-align: middle;
+  }
+  .note-box {
+    margin-top: 12px;
+    background: #fff;
+    border: 1px dashed var(--line);
+    border-radius: 7px;
+    padding: 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .note-box code {
+    font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    word-break: break-word;
+  }
+  .work { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+  .work ul { margin: 4px 0 0; padding-left: 18px; }
+  .err-msg { color: var(--err); font-size: 14px; font-weight: 600; }
+  .reverse {
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .reverse .out { font-weight: 700; color: var(--navy); }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .copied { color: var(--ok); font-size: 12px; font-weight: 600; }
+
+  @media (max-width: 600px) {
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    .result .big { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pharmacy Day-Supply Calculator</h1>
+  <p>Offline tool · Cub Pharmacy Rosemount #1651</p>
+</header>
+
+<div class="wrap">
+  <div class="disclaimer">
+    ⚠️ Estimates only — the pharmacist verifies every result against the package insert before billing.
+    The <span class="verify-badge">verify</span> badge means the product's <strong>unit/dose count</strong>
+    is unconfirmed seed data; entries without it had that count source-confirmed (Jun 2026). NDC codes
+    throughout are representative and may not match the package on your shelf — always check the NDC if
+    you use it for lookup. Insulin priming defaults are editable estimates.
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="insulin">Insulin</button>
+    <button class="tab" data-tab="warfarin">Warfarin</button>
+    <button class="tab" data-tab="topical">Topical</button>
+    <button class="tab" data-tab="eye">Eye Drops</button>
+    <button class="tab" data-tab="inhaler">Inhaler</button>
+    <button class="tab" data-tab="nasal">Nasal Spray</button>
+    <button class="tab" data-tab="other">Other</button>
+  </div>
+
+  <!-- ============================ INSULIN ============================ -->
+  <section class="panel active" id="panel-insulin" data-calc="insulin">
+    <div class="card">
+      <h2>Insulin</h2>
+      <label class="fld">
+        <span>Product</span>
+        <select data-role="product"></select>
+      </label>
+      <div class="product-meta" data-role="product-meta"></div>
+
+      <div data-role="manual" style="display:none">
+        <div class="grid2">
+          <label class="fld"><span>Units per package</span>
+            <input type="number" inputmode="decimal" data-f="manualUnitsPerPackage" placeholder="e.g. 1500" /></label>
+          <label class="fld"><span>Dispense unit label</span>
+            <input type="text" data-f="manualDispenseUnit" placeholder="box (5 pens) / vial" /></label>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <label class="fld"><span>Units per day</span>
+          <input type="number" inputmode="decimal" data-f="unitsPerDay" placeholder="e.g. 30" /></label>
+        <label class="fld"><span>Injections per day</span>
+          <input type="number" inputmode="numeric" data-f="injPerDay" value="1" /></label>
+        <label class="fld"><span>Priming units / injection</span>
+          <input type="number" inputmode="decimal" data-f="primePerInj" value="0" /></label>
+      </div>
+      <label class="fld"><span>Quantity dispensed (packages / boxes / vials)</span>
+        <input type="number" inputmode="decimal" data-f="packages" placeholder="e.g. 2" /></label>
+
+      <label class="chk"><input type="checkbox" data-f="prn" /> PRN / as-needed (round day supply <strong>up</strong>)</label>
+    </div>
+    <div class="card"><div class="result" data-role="result"></div></div>
+  </section>
+
+  <!-- ============================ WARFARIN ============================ -->
+  <section class="panel" id="panel-warfarin" data-calc="warfarin">
+    <div class="card">
+      <h2>Warfarin (variable dose by weekday)</h2>
+      <label class="fld">
+        <span>Tablet strength (mg)</span>
+        <select data-f="strength">
+          <option value="1">1 mg</option><option value="2">2 mg</option>
+          <option value="2.5">2.5 mg</option><option value="3">3 mg</option>
+          <option value="4">4 mg</option><option value="5" selected>5 mg</option>
+          <option value="6">6 mg</option><option value="7.5">7.5 mg</option>
+          <option value="10">10 mg</option><option value="manual">Manual…</option>
+        </select>
+      </label>
+      <label class="fld" data-role="manual-strength" style="display:none"><span>Manual strength (mg)</span>
+        <input type="number" inputmode="decimal" data-f="strengthManual" /></label>
+
+      <span style="font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600;">Dose in mg per day</span>
+      <div class="grid7" data-role="days" style="margin:6px 0 8px;">
+        <div class="day"><span>Sun</span><input type="number" inputmode="decimal" data-day="0" /></div>
+        <div class="day"><span>Mon</span><input type="number" inputmode="decimal" data-day="1" /></div>
+        <div class="day"><span>Tue</span><input type="number" inputmode="decimal" data-day="2" /></div>
+        <div class="day"><span>Wed</span><input type="number" inputmode="decimal" data-day="3" /></div>
+        <div class="day"><span>Thu</span><input type="number" inputmode="decimal" data-day="4" /></div>
+        <div class="day"><span>Fri</span><input type="number" inputmode="decimal" data-day="5" /></div>
+        <div class="day"><span>Sat</span><input type="number" inputmode="decimal" data-day="6" /></div>
+      </div>
+      <div class="row-inline" style="margin-bottom:12px;">
+        <input type="number" inputmode="decimal" data-role="fill-val" placeholder="mg" style="max-width:90px;" />
+        <button class="btn ghost small" data-role="fill-all">Fill all days</button>
+        <button class="btn ghost small" data-role="clear-days">Clear</button>
+      </div>
+
+      <label class="fld"><span>Quantity dispensed (tablets)</span>
+        <input type="number" inputmode="decimal" data-f="qty" placeholder="e.g. 30" /></label>
+      <label class="chk"><input type="checkbox" data-f="prn" /> PRN (round day supply <strong>up</strong>)</label>
+    </div>
+    <div class="card"><div class="result" data-role="result"></div></div>
+  </section>
+
+  <!-- ============================ TOPICAL ============================ -->
+  <section class="panel" id="panel-topical" data-calc="topical">
+    <div class="card">
+      <h2>Topical</h2>
+      <div class="row-inline" style="margin-bottom:12px;">
+        <label class="chk"><input type="radio" name="topmode" data-f="mode" value="grams" /> Grams/application known</label>
+        <label class="chk"><input type="radio" name="topmode" data-f="mode" value="ftu" checked /> Estimate by FTU</label>
+      </div>
+
+      <div data-role="grams-mode" style="display:none">
+        <label class="fld"><span>Grams per application</span>
+          <input type="number" inputmode="decimal" data-f="gPerApp" placeholder="e.g. 1" /></label>
+      </div>
+
+      <div data-role="ftu-mode">
+        <label class="fld"><span>Patient age band</span>
+          <select data-f="age"></select></label>
+        <span style="font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600;">Area(s) of application</span>
+        <div data-role="regions" style="margin:6px 0 12px;display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
+        <div class="hint" data-role="ftu-readout"></div>
+      </div>
+
+      <div class="grid2">
+        <label class="fld"><span>Applications per day</span>
+          <input type="number" inputmode="decimal" data-f="appsPerDay" placeholder="e.g. 2" /></label>
+        <label class="fld"><span>Total grams dispensed</span>
+          <input type="number" inputmode="decimal" data-f="totalG" placeholder="e.g. 30" /></label>
+      </div>
+      <label class="chk"><input type="checkbox" data-f="prn" /> PRN (round day supply <strong>up</strong>)</label>
+    </div>
+    <div class="card"><div class="result" data-role="result"></div></div>
+  </section>
+
+  <!-- ============================ EYE DROPS ============================ -->
+  <section class="panel" id="panel-eye" data-calc="eye">
+    <div class="card">
+      <h2>Eye Drops / Ophthalmic</h2>
+      <label class="fld"><span>Product / vehicle (sets drops per mL)</span>
+        <select data-role="product"></select></label>
+      <div class="product-meta" data-role="product-meta"></div>
+      <div class="grid3">
+        <label class="fld"><span>Bottle volume (mL)</span>
+          <input type="number" inputmode="decimal" data-f="ml" placeholder="e.g. 5" /></label>
+        <label class="fld"><span>Drops per mL</span>
+          <input type="number" inputmode="decimal" data-f="dropsPerMl" value="20" /></label>
+        <label class="fld"><span>Drops per dose (per eye)</span>
+          <input type="number" inputmode="decimal" data-f="dropsPerDose" value="1" /></label>
+      </div>
+      <div class="grid2">
+        <label class="fld"><span>Doses per day</span>
+          <input type="number" inputmode="decimal" data-f="dosesPerDay" placeholder="e.g. 2" /></label>
+        <label class="fld" style="display:flex;align-items:flex-end;">
+          <label class="chk"><input type="checkbox" data-f="bothEyes" /> Both eyes (×2)</label></label>
+      </div>
+      <label class="chk"><input type="checkbox" data-f="prn" /> PRN (round day supply <strong>up</strong>)</label>
+    </div>
+    <div class="card"><div class="result" data-role="result"></div></div>
+  </section>
+
+  <!-- ============================ INHALER ============================ -->
+  <section class="panel" id="panel-inhaler" data-calc="inhaler">
+    <div class="card">
+      <h2>Inhaler</h2>
+      <label class="fld"><span>Product</span><select data-role="product"></select></label>
+      <div class="product-meta" data-role="product-meta"></div>
+      <div data-role="manual" style="display:none">
+        <label class="fld"><span>Doses (actuations) per inhaler</span>
+          <input type="number" inputmode="numeric" data-f="manualDoses" placeholder="e.g. 200" /></label>
+      </div>
+      <div class="grid3">
+        <label class="fld"><span>Puffs per dose</span>
+          <input type="number" inputmode="decimal" data-f="puffsPerDose" value="1" /></label>
+        <label class="fld"><span>Doses per day</span>
+          <input type="number" inputmode="decimal" data-f="dosesPerDay" placeholder="e.g. 4" /></label>
+        <label class="fld"><span># inhalers dispensed</span>
+          <input type="number" inputmode="decimal" data-f="devices" value="1" /></label>
+      </div>
+      <label class="chk"><input type="checkbox" data-f="prn" /> PRN / rescue (round day supply <strong>up</strong>)</label>
+    </div>
+    <div class="card"><div class="result" data-role="result"></div></div>
+  </section>
+
+  <!-- ============================ NASAL ============================ -->
+  <section class="panel" id="panel-nasal" data-calc="nasal">
+    <div class="card">
+      <h2>Nasal Spray</h2>
+      <label class="fld"><span>Product</span><select data-role="product"></select></label>
+      <div class="product-meta" data-role="product-meta"></div>
+      <div data-role="manual" style="display:none">
+        <label class="fld"><span>Sprays per bottle</span>
+          <input type="number" inputmode="numeric" data-f="manualDoses" placeholder="e.g. 120" /></label>
+      </div>
+      <div class="grid3">
+        <label class="fld"><span>Sprays per dose</span>
+          <input type="number" inputmode="decimal" data-f="puffsPerDose" value="1" /></label>
+        <label class="fld"><span>Doses per day</span>
+          <input type="number" inputmode="decimal" data-f="dosesPerDay" placeholder="e.g. 2" /></label>
+        <label class="fld"><span># bottles dispensed</span>
+          <input type="number" inputmode="decimal" data-f="devices" value="1" /></label>
+      </div>
+      <label class="chk"><input type="checkbox" data-f="prn" /> PRN (round day supply <strong>up</strong>)</label>
+    </div>
+    <div class="card"><div class="result" data-role="result"></div></div>
+  </section>
+
+  <!-- ============================ OTHER ============================ -->
+  <section class="panel" id="panel-other" data-calc="other">
+    <div class="card">
+      <h2>Other (generic: liquids, etc.)</h2>
+      <div class="grid2">
+        <label class="fld"><span>Total quantity dispensed</span>
+          <input type="number" inputmode="decimal" data-f="totalQty" placeholder="e.g. 150" /></label>
+        <label class="fld"><span>Unit label (mL, tab, …)</span>
+          <input type="text" data-f="unit" placeholder="mL" value="mL" /></label>
+      </div>
+      <div class="grid2">
+        <label class="fld"><span>Amount per dose</span>
+          <input type="number" inputmode="decimal" data-f="perDose" placeholder="e.g. 5" /></label>
+        <label class="fld"><span>Doses per day</span>
+          <input type="number" inputmode="decimal" data-f="dosesPerDay" placeholder="e.g. 3" /></label>
+      </div>
+      <label class="chk"><input type="checkbox" data-f="prn" /> PRN (round day supply <strong>up</strong>)</label>
+    </div>
+    <div class="card"><div class="result" data-role="result"></div></div>
+  </section>
+
+</div>
+
+<script src="products.js"></script>
+<script src="calc.js"></script>
+<script>
+(function () {
+  "use strict";
+  var DB = window.PHARMACY_PRODUCTS || {};
+  var DC = window.DayCalc;
+
+  // ---------- helpers ----------
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function trimNum(n) { return Math.round(n * 1000) / 1000; }
+  function vbadge(verify) { return verify ? ' <span class="verify-badge">verify</span>' : ''; }
+
+  // Read all data-f inputs within a panel into an object.
+  function readFields(panel) {
+    var o = {};
+    $all('[data-f]', panel).forEach(function (el) {
+      var k = el.getAttribute('data-f');
+      if (el.type === 'checkbox') { o[k] = el.checked; }
+      else if (el.type === 'radio') { if (el.checked) o[k] = el.value; }
+      else { o[k] = el.value; }
+    });
+    return o;
+  }
+
+  // ---------- result rendering ----------
+  function renderResult(panel, res) {
+    var box = $('[data-role="result"]', panel);
+    if (res.error) {
+      box.className = 'result err';
+      box.innerHTML = '<div class="err-msg">' + res.error + '</div>';
+      return;
+    }
+    box.className = 'result ok';
+    var html = '';
+    html += '<div class="big">' + res.daySupply + ' <small>day' + (res.daySupply === 1 ? '' : 's') + ' supply</small>'
+          + (res.prn ? '<span class="prn-tag">PRN ↑</span>' : '') + '</div>';
+    html += '<div class="exact">exact: ' + trimNum(res.exact) + ' days'
+          + (res.prn ? ' · rounded up (PRN)' : ' · rounded down') + '</div>';
+    if (res.note) {
+      html += '<div class="note-box"><code data-role="note">' + res.note + '</code>'
+            + '<button class="btn small" data-role="copy">Copy note</button></div>';
+    }
+    if (res.work && res.work.length) {
+      html += '<div class="work">Work:<ul><li>' + res.work.join('</li><li>') + '</li></ul></div>';
+    }
+    if (res.reverse) {
+      html += '<div class="reverse">For a <strong>' + res.reverse.targetDays + '-day</strong> supply, dispense '
+            + '<span class="out">' + res.reverse.text + '</span></div>';
+    }
+    box.innerHTML = html;
+
+    var copyBtn = $('[data-role="copy"]', box);
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function () {
+        copyText(res.note, copyBtn);
+      });
+    }
+  }
+
+  function copyText(text, btn) {
+    function done() {
+      var old = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(function () { btn.textContent = old; btn.classList.remove('copied'); }, 1400);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+    } else { fallback(text, done); }
+  }
+  function fallback(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  // ---------- product dropdown population ----------
+  function fillSelect(sel, items, labelFn, opts) {
+    opts = opts || {};
+    sel.innerHTML = '';
+    if (opts.placeholder) {
+      var p = document.createElement('option');
+      p.value = ''; p.textContent = opts.placeholder; sel.appendChild(p);
+    }
+    items.forEach(function (it, i) {
+      var o = document.createElement('option');
+      o.value = String(i);
+      o.textContent = labelFn(it);
+      sel.appendChild(o);
+    });
+    if (opts.manual) {
+      var m = document.createElement('option');
+      m.value = 'manual'; m.textContent = 'Manual entry…'; sel.appendChild(m);
+    }
+  }
+
+  // =====================================================================
+  // GATHER — build a plain args object from each panel's DOM, then call the
+  // matching pure function in calc.js (window.DayCalc). The math lives in
+  // calc.js so the browser and the Node tests run identical code.
+  // =====================================================================
+  function selectedProduct(panel, dbKey) {
+    var sel = $('[data-role="product"]', panel);
+    if (sel.value === '' || sel.value === 'manual') return { value: sel.value, product: null };
+    return { value: sel.value, product: DB[dbKey][+sel.value] };
+  }
+  function shortName(p) { return p.name.split(' (')[0]; }
+
+  var GATHER = {
+    insulin: function (panel, f) {
+      var s = selectedProduct(panel, 'insulin');
+      var a = { unitsPerDay: f.unitsPerDay, injPerDay: f.injPerDay, primePerInj: f.primePerInj,
+                packages: f.packages, prn: f.prn };
+      if (s.value === 'manual') { a.unitsPerPackage = f.manualUnitsPerPackage; a.dispenseUnit = f.manualDispenseUnit; a.name = 'Insulin'; }
+      else if (s.product) { a.unitsPerPackage = s.product.unitsPerPackage; a.dispenseUnit = s.product.dispenseUnit; a.name = shortName(s.product); }
+      else return { error: 'Select a product.' };
+      return DC.insulin(a);
+    },
+    warfarin: function (panel, f) {
+      var strength = f.strength === 'manual' ? f.strengthManual : f.strength;
+      var doses = $all('[data-day]', panel).map(function (el) { return el.value; });
+      return DC.warfarin({ strength: strength, doses: doses, qty: f.qty, prn: f.prn });
+    },
+    topical: function (panel, f) {
+      var regions = $all('[data-region]:checked', panel).map(function (el) {
+        return { label: el.getAttribute('data-label'), ftu: el.getAttribute('data-ftu') };
+      });
+      return DC.topical({ mode: f.mode, gPerApp: f.gPerApp, regions: regions,
+                          gramsPerFtu: (DB.topicalFTU || {}).gramsPerFtu,
+                          appsPerDay: f.appsPerDay, totalG: f.totalG, prn: f.prn });
+    },
+    eye: function (panel, f) {
+      return DC.eye({ ml: f.ml, dropsPerMl: f.dropsPerMl, dropsPerDose: f.dropsPerDose,
+                      dosesPerDay: f.dosesPerDay, bothEyes: f.bothEyes, prn: f.prn });
+    },
+    inhaler: function (panel, f) { return deviceGather(panel, f, 'inhaler', 'puff', 'inhaler', 'Inhaler'); },
+    nasal: function (panel, f) { return deviceGather(panel, f, 'nasal', 'spray', 'bottle', 'Nasal spray'); },
+    other: function (panel, f) {
+      return DC.other({ totalQty: f.totalQty, unit: f.unit, perDose: f.perDose, dosesPerDay: f.dosesPerDay, prn: f.prn });
+    },
+  };
+
+  function deviceGather(panel, f, dbKey, unitWord, deviceWord, fallbackName) {
+    var s = selectedProduct(panel, dbKey);
+    var a = { puffsPerDose: f.puffsPerDose, dosesPerDay: f.dosesPerDay, devices: f.devices,
+              prn: f.prn, unitWord: unitWord, deviceWord: deviceWord };
+    if (s.value === 'manual') { a.dosesPerDevice = f.manualDoses; a.name = fallbackName; }
+    else if (s.product) { a.dosesPerDevice = s.product.dosesPerDevice; a.name = shortName(s.product); }
+    else return { error: 'Select a product.' };
+    return DC.device(a);
+  }
+
+  // =====================================================================
+  // WIRING
+  // =====================================================================
+  function recalc(panel) {
+    var key = panel.getAttribute('data-calc');
+    var f = readFields(panel);
+    var res;
+    try { res = GATHER[key](panel, f); }
+    catch (e) { res = { error: 'Check inputs.' }; }
+    renderResult(panel, res || { error: 'Enter values to calculate.' });
+  }
+
+  // Tabs
+  $('#tabs').addEventListener('click', function (e) {
+    var t = e.target.closest('.tab'); if (!t) return;
+    var id = t.getAttribute('data-tab');
+    $all('.tab').forEach(function (x) { x.classList.toggle('active', x === t); });
+    $all('.panel').forEach(function (p) { p.classList.toggle('active', p.id === 'panel-' + id); });
+  });
+
+  // Generic live recalc on any input within a panel
+  $all('.panel').forEach(function (panel) {
+    panel.addEventListener('input', function () { recalc(panel); });
+    panel.addEventListener('change', function () { recalc(panel); });
+  });
+
+  // ---- Insulin product wiring ----
+  (function () {
+    var panel = $('#panel-insulin');
+    var sel = $('[data-role="product"]', panel);
+    fillSelect(sel, DB.insulin || [], function (p) { return p.name; }, { placeholder: 'Select insulin…', manual: true });
+    function update() {
+      var idx = sel.value;
+      var manual = $('[data-role="manual"]', panel);
+      var meta = $('[data-role="product-meta"]', panel);
+      var primeInput = $('[data-f="primePerInj"]', panel);
+      if (idx === 'manual') {
+        manual.style.display = '';
+        meta.innerHTML = 'Manual entry — enter package units and priming yourself.';
+      } else if (idx !== '') {
+        manual.style.display = 'none';
+        var p = DB.insulin[+idx];
+        meta.innerHTML = p.unitsPerPackage + ' units / ' + p.dispenseUnit + ' · ' + p.concentration + ' u/mL · prime '
+                       + p.primingUnitsPerPrime + ' u/inj' + vbadge(p.verify);
+        primeInput.value = p.primingUnitsPerPrime; // auto-fill, still editable
+      } else {
+        manual.style.display = 'none'; meta.innerHTML = '';
+      }
+    }
+    sel.addEventListener('change', update);
+    update();
+  })();
+
+  // ---- Warfarin manual strength + quick fill ----
+  (function () {
+    var panel = $('#panel-warfarin');
+    var strengthSel = $('[data-f="strength"]', panel);
+    strengthSel.addEventListener('change', function () {
+      $('[data-role="manual-strength"]', panel).style.display = strengthSel.value === 'manual' ? '' : 'none';
+    });
+    $('[data-role="fill-all"]', panel).addEventListener('click', function () {
+      var v = $('[data-role="fill-val"]', panel).value;
+      $all('[data-day]', panel).forEach(function (el) { el.value = v; });
+      recalc(panel);
+    });
+    $('[data-role="clear-days"]', panel).addEventListener('click', function () {
+      $all('[data-day]', panel).forEach(function (el) { el.value = ''; });
+      recalc(panel);
+    });
+  })();
+
+  // ---- Topical FTU wiring ----
+  (function () {
+    var panel = $('#panel-topical');
+    var ftu = DB.topicalFTU || { ageBands: [], regions: [] };
+    var ageSel = $('[data-f="age"]', panel);
+    ftu.ageBands.forEach(function (a) {
+      var o = document.createElement('option'); o.value = a.id; o.textContent = a.label;
+      if (a.id === 'adult') o.selected = true;
+      ageSel.appendChild(o);
+    });
+    var regionsBox = $('[data-role="regions"]', panel);
+    function buildRegions() {
+      var age = ageSel.value;
+      regionsBox.innerHTML = '';
+      ftu.regions.forEach(function (r) {
+        var val = r.ftu[age];
+        if (val == null) return; // region not defined for this age band
+        var lbl = document.createElement('label');
+        lbl.className = 'chk';
+        lbl.innerHTML = '<input type="checkbox" data-region="1" data-ftu="' + val + '" data-label="'
+          + r.label + '"> ' + r.label + ' <span style="color:var(--muted);font-size:12px;">(' + val + ' FTU)</span>';
+        regionsBox.appendChild(lbl);
+      });
+      recalc(panel);
+    }
+    ageSel.addEventListener('change', buildRegions);
+    // mode toggle
+    $all('[name="topmode"]', panel).forEach(function (r) {
+      r.addEventListener('change', function () {
+        var ftuMode = $('[value="ftu"]', panel).checked;
+        $('[data-role="ftu-mode"]', panel).style.display = ftuMode ? '' : 'none';
+        $('[data-role="grams-mode"]', panel).style.display = ftuMode ? 'none' : '';
+        recalc(panel);
+      });
+    });
+    buildRegions();
+  })();
+
+  // ---- Eye drops product wiring ----
+  (function () {
+    var panel = $('#panel-eye');
+    var sel = $('[data-role="product"]', panel);
+    var oph = (DB.ophthalmic && DB.ophthalmic.products) || [];
+    fillSelect(sel, oph, function (p) { return p.name + ' (' + p.dropsPerMl + '/mL)'; }, { placeholder: 'Standard (20 drops/mL)' });
+    sel.addEventListener('change', function () {
+      var meta = $('[data-role="product-meta"]', panel);
+      var dropsInput = $('[data-f="dropsPerMl"]', panel);
+      if (sel.value === '') { meta.innerHTML = ''; dropsInput.value = DB.ophthalmic.defaultDropsPerMl; }
+      else {
+        var p = oph[+sel.value];
+        dropsInput.value = p.dropsPerMl;
+        meta.innerHTML = p.note + vbadge(p.verify);
+      }
+      recalc(panel);
+    });
+  })();
+
+  // ---- Inhaler + Nasal product wiring ----
+  function wireDevicePanel(panelId, dbKey, placeholder) {
+    var panel = $(panelId);
+    var sel = $('[data-role="product"]', panel);
+    fillSelect(sel, DB[dbKey] || [], function (p) {
+      return p.name + ' — ' + p.dosesPerDevice + (p.category ? (' · ' + p.category) : '');
+    }, { placeholder: placeholder, manual: true });
+    sel.addEventListener('change', function () {
+      var manual = $('[data-role="manual"]', panel);
+      var meta = $('[data-role="product-meta"]', panel);
+      if (sel.value === 'manual') { manual.style.display = ''; meta.innerHTML = 'Manual entry.'; }
+      else if (sel.value !== '') {
+        manual.style.display = 'none';
+        var p = DB[dbKey][+sel.value];
+        meta.innerHTML = p.dosesPerDevice + ' doses/device · ' + (p.packageDesc || '') + vbadge(p.verify);
+      } else { manual.style.display = 'none'; meta.innerHTML = ''; }
+      recalc(panel);
+    });
+  }
+  wireDevicePanel('#panel-inhaler', 'inhaler', 'Select inhaler…');
+  wireDevicePanel('#panel-nasal', 'nasal', 'Select nasal spray…');
+
+  // Initial render for all panels
+  $all('.panel').forEach(recalc);
+})();
+</script>
+</body>
+</html>
