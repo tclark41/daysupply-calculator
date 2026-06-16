@@ -86,3 +86,9 @@ node test.js
 Runs the same `calc.js` the browser uses against hand-computed acceptance cases
 (insulin ± priming, warfarin weekly tablets, topical FTU, eye drops OU, inhaler +
 reverse, PRN round-up, and input guards). Expected: `18 passed, 0 failed`.
+
+## License
+
+[MIT](LICENSE) © 2026 Thomas Clarkin. The "AS IS, no warranty" terms cover the
+software; they do not replace the clinical disclaimer above — the pharmacist
+remains responsible for verifying every result.
