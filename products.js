@@ -37,6 +37,7 @@ window.PHARMACY_PRODUCTS = {
     version: "0.2",
     seeded: "2026-06-15",
     dosesConfirmed: "2026-06-15",
+    updated: "2026-06-16",
     disclaimer:
       "Confirm every value against the current package insert before billing. The 'verify' flag " +
       "refers to the UNIT/DOSE COUNT used in the math (units per package, doses per device, drops/mL). " +

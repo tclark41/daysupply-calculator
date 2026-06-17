@@ -4,7 +4,7 @@
  * Bump CACHE (e.g. v1 -> v2) whenever you change index.html/calc.js/products.js
  * so phones pick up the new version on their next online load.
  */
-const CACHE = "daysupply-v1";
+const CACHE = "daysupply-v2";
 const ASSETS = [
   "./",
   "./index.html",

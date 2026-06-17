@@ -59,6 +59,10 @@ if echo "$changed" | grep -qE "$CACHED_RE"; then
   next=$((cur + 1))
   sed -i "s/daysupply-v${cur}/daysupply-v${next}/" sw.js
   echo "↑ Service-worker cache: daysupply-v${cur} → daysupply-v${next} (phones will refresh)"
+  # Stamp today's date into the footer "Data updated" line.
+  today="$(date +%F)"
+  sed -i "s/updated: \"[0-9-]*\"/updated: \"${today}\"/" products.js
+  echo "↑ Footer 'Data updated' date → ${today}"
 else
   echo "· No cached assets changed — service-worker cache left as-is."
 fi

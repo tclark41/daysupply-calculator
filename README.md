@@ -105,9 +105,14 @@ helper scripts handle the rest:
 
 `./publish.sh` does, in order: runs `node test.js` (aborts if `products.js` is
 broken), **auto-bumps the `CACHE` version in `sw.js`** when a cached file changed so
-installed iPhones pick up the new data, shows the diff and asks to confirm, then
-commits and pushes. GitHub Pages rebuilds in ~1 minute. Flags: `-y` skips the
-confirmation prompt; with no message it uses `Update product data (date)`.
+installed iPhones pick up the new data, **stamps today's date into the footer's
+"Data updated" line**, shows the diff and asks to confirm, then commits and pushes.
+GitHub Pages rebuilds in ~1 minute. Flags: `-y` skips the confirmation prompt; with
+no message it uses `Update product data (date)`.
+
+The app footer shows **Data updated: YYYY-MM-DD** (from `meta.updated` in
+`products.js`). At the counter, that date tells you which version a phone is running
+— an old date means the phone hasn't refreshed yet (reopen it once while online).
 
 > Why the cache bump matters: the app is a *cache-first* PWA, so without a new
 > `CACHE` name an already-installed phone would keep serving the old data. The

@@ -199,6 +199,14 @@
   .reverse .out { font-weight: 700; color: var(--navy); }
   .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .copied { color: var(--ok); font-size: 12px; font-weight: 600; }
+  #app-footer {
+    margin: 18px 4px calc(20px + env(safe-area-inset-bottom));
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  #app-footer .dot { margin: 0 6px; opacity: 0.6; }
+  #app-footer #data-updated { font-weight: 600; }
 
   @media (max-width: 600px) {
     .grid2, .grid3 { grid-template-columns: 1fr; }
@@ -432,6 +440,11 @@
     <div class="card"><div class="result" data-role="result"></div></div>
   </section>
 
+  <footer id="app-footer">
+    <span id="data-updated">Data updated: —</span>
+    <span class="dot">·</span>
+    <span>Estimates only — verify before billing</span>
+  </footer>
 </div>
 
 <script src="products.js"></script>
@@ -738,6 +751,14 @@
   }
   wireDevicePanel('#panel-inhaler', 'inhaler', 'Select inhaler…');
   wireDevicePanel('#panel-nasal', 'nasal', 'Select nasal spray…');
+
+  // Footer: show when the product data was last published, so at the counter you
+  // can tell which version a phone is running (an old date = needs a refresh).
+  (function () {
+    var el = $('#data-updated');
+    var d = (DB.meta && DB.meta.updated) ? DB.meta.updated : null;
+    if (el) el.textContent = 'Data updated: ' + (d || '—');
+  })();
 
   // Initial render for all panels
   $all('.panel').forEach(recalc);
