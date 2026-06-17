@@ -90,6 +90,31 @@ The data is a `<script src>` (not a CSV) on purpose: a double-clicked `file://` 
 can load a sibling `.js` file offline, but the browser blocks `fetch()` of a local
 `.csv`. Keeping it as JS preserves the no-server, works-offline design.
 
+## Updating & publishing (the everyday loop)
+
+When you confirm an NDC or fix a dose count, you only edit **`products.js`**. Two
+helper scripts handle the rest:
+
+```bash
+# 1. (optional) preview your edits locally before shipping
+./preview.sh                 # serves http://127.0.0.1:8000/  (Ctrl-C to stop)
+
+# 2. publish — tests, bumps the offline cache, commits, pushes
+./publish.sh "Confirmed Lantus + ProAir NDCs"
+```
+
+`./publish.sh` does, in order: runs `node test.js` (aborts if `products.js` is
+broken), **auto-bumps the `CACHE` version in `sw.js`** when a cached file changed so
+installed iPhones pick up the new data, shows the diff and asks to confirm, then
+commits and pushes. GitHub Pages rebuilds in ~1 minute. Flags: `-y` skips the
+confirmation prompt; with no message it uses `Update product data (date)`.
+
+> Why the cache bump matters: the app is a *cache-first* PWA, so without a new
+> `CACHE` name an already-installed phone would keep serving the old data. The
+> script handles this for you — but if you ever edit by hand, remember to bump
+> `daysupply-vN` in `sw.js`. After publishing, reopen the iPhone app once while
+> online so it can fetch the update.
+
 ## Tests
 
 ```
